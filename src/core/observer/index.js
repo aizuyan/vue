@@ -132,6 +132,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 /**
  * Define a reactive property on an Object.
  */
+// 给对象设置一个响应式属性
 export function defineReactive (
   obj: Object,
   key: string,
@@ -198,21 +199,28 @@ export function defineReactive (
  * triggers change notification if the property doesn't
  * already exist.
  */
+// 给一个对象设置一个属性。如果属性不存在的话，添加属性并触发事件通知。
 export function set (target: Array<any> | Object, key: any, val: any): any {
+  // 非生产环境，检验target，如果是undefined、null、或者简单数据类型，显示提示信息。
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 如果是数组，并且键合法，直接修改数组，这里可以看observer.array.js，对数组部分方法进行了重新包装
+  // 达到了响应式的目的
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
     target.splice(key, 1, val)
     return val
   }
+
+  // 如果key已经在target中存在了，并且不再Object的显式原型上，直接修改改制即可。
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
+  // TODO anno
   const ob = (target: any).__ob__
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
